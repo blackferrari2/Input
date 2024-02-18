@@ -55,26 +55,26 @@ function Input.add(self: Input, action: Action.Action, ...: any)
 		end
 
         ContextActionService:BindActionAtPriority(
-            action.name,
+            action.key,
             callHandler, 
             action.buttonInfo and true or false, 
             action.priority, 
             table.unpack(action.trigger)
         )
 
-        self.bindedActionJunk[action.name] = action.name
+        self.bindedActionJunk[action.key] = action.key
 
         if action.buttonInfo then
             if action.buttonInfo.image then
-                ContextActionService:SetImage(action.name, action.buttonInfo.image)
+                ContextActionService:SetImage(action.key, action.buttonInfo.image)
             end
     
             if action.buttonInfo.position then
-                ContextActionService:SetPosition(action.name, action.buttonInfo.position)
+                ContextActionService:SetPosition(action.key, action.buttonInfo.position)
             end
     
             if action.buttonInfo.title then
-                ContextActionService:SetTitle(action.name, action.buttonInfo.title)
+                ContextActionService:SetTitle(action.key, action.buttonInfo.title)
             end 
         end
     end
@@ -85,10 +85,10 @@ function Input.add(self: Input, action: Action.Action, ...: any)
         local connection = action.trigger:Connect(function()
 			local emptyInputObject: any = nil
 
-            action.handler(action.Name, Enum.UserInputState.Begin, emptyInputObject, table.unpack(args))
+            action.handler(action.key, Enum.UserInputState.Begin, emptyInputObject, table.unpack(args))
         end)
 
-        self.bindedActionJunk[action.name] = connection
+        self.bindedActionJunk[action.key] = connection
     end
 
     table.insert(self.actions, action)
@@ -110,7 +110,7 @@ function Input.remove(self: Input, action: Action.Action)
         error(string.format(ERROR_ACTION_NOT_BINDED, action.name))
     end
 
-    local thingToCleanup =  self.bindedActionJunk[action.name]
+    local thingToCleanup =  self.bindedActionJunk[action.key]
 
     if action.triggerType == Action.TriggerTypes.Keys then
         ContextActionService:UnbindAction(thingToCleanup)
@@ -120,7 +120,7 @@ function Input.remove(self: Input, action: Action.Action)
         thingToCleanup:Disconnect()
     end
 
-    self.bindedActionJunk[action.name] = nil
+    self.bindedActionJunk[action.key] = nil
     table.remove(self.actions, table.find(self.actions, action))
 end
 
@@ -134,7 +134,7 @@ function Input.destroy(self: Input)
 end
 
 function Input.isActionBinded(self: Input, action: Action.Action): boolean
-    return self.bindedActionJunk[action.name] ~= nil
+    return self.bindedActionJunk[action.key] ~= nil
 end
 
 ----------------------

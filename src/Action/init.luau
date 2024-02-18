@@ -5,6 +5,8 @@ local Action = {
         Keys = "Keys",
         Signal = "Signal",
     },
+
+	Index = 0,
 }
 
 Action.__index = Action
@@ -15,7 +17,8 @@ type Handler = (string, Enum.UserInputState, InputObject, ...any) -> (Enum.Conte
 
 type self = {
     name: string,
-    priority: Enum.ContextActionPriority,
+    key: string,
+    priority: number,
 
     buttonInfo: ButtonInfo.ButtonInfo?,
     handler: Handler?,
@@ -29,25 +32,21 @@ export type Action = typeof(setmetatable({} :: self, Action))
 
 ----------------------
 
-function Action.new(name: string, priority: Enum.ContextActionPriority): Action
+-- key: so i wanna be able to bind actions with the same name
+-- thats the keys purpose. generate an unique name for contextactionservice everytime this function is called
+-- its really just a counter thats appended to the `name`
+function Action.new(name: string, priority: number?): Action
     local self = {
         name = name,
+		key = name .. Action.Index,
         priority = priority or Enum.ContextActionPriority.High.Value,
     }
 
     setmetatable(self, Action)
 
+	Action.Index += 1
+
     return self
-end
-
-function Action.clone(self: Action): Action
-	local clone = Action.new(self.name, self.priority)
-
-	clone:setTrigger(self.trigger)
-	clone:setHandler(self.handler)
-	clone:setButtonInfo(self.buttonInfo)
-
-	return clone
 end
 
 function Action.setTrigger(self: Action, to: Trigger)
