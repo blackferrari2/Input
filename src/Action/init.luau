@@ -16,10 +16,11 @@ type Handler = (string, Enum.UserInputState, InputObject, ...any) -> (Enum.Conte
 type self = {
     name: string,
     priority: Enum.ContextActionPriority,
-    buttonInfo: ButtonInfo.ButtonInfo | false,
-    handler: Handler,
-    trigger: Trigger,
-    triggerType: TriggerType,
+
+    buttonInfo: ButtonInfo.ButtonInfo?,
+    handler: Handler?,
+    trigger: Trigger?,
+    triggerType: TriggerType?,
 }
 
 export type Trigger = {Enum.KeyCode} | RBXScriptSignal
@@ -28,14 +29,10 @@ export type Action = typeof(setmetatable({} :: self, Action))
 
 ----------------------
 
-function Action.new(name: string): Action
+function Action.new(name: string, priority: Enum.ContextActionPriority): Action
     local self = {
         name = name,
-        priority = Enum.ContextActionPriority.High.Value,
-        buttonInfo = false,
-        handler = nil,
-        trigger = nil,
-        triggerType = nil,
+        priority = priority or Enum.ContextActionPriority.High.Value,
     }
 
     setmetatable(self, Action)
@@ -43,7 +40,23 @@ function Action.new(name: string): Action
     return self
 end
 
+function Action.clone(self: Action): Action
+	local clone = Action.new(self.name, self.priority)
+
+	clone:setTrigger(self.trigger)
+	clone:setHandler(self.handler)
+	clone:setButtonInfo(self.buttonInfo)
+
+	return clone
+end
+
 function Action.setTrigger(self: Action, to: Trigger)
+	if not to then
+		self.trigger = nil
+		self.triggerType = nil
+		return
+	end
+
     self.trigger = to
     self.triggerType = Action.TriggerTypes.Keys
 
@@ -52,12 +65,12 @@ function Action.setTrigger(self: Action, to: Trigger)
     end
 end
 
-function Action.setHandler(self: Action, to: Handler)
+function Action.setHandler(self: Action, to: Handler?)
     self.handler = to
 end
 
 function Action.setButtonInfo(self: Action, to: ButtonInfo.ButtonInfo?)
-    self.buttonInfo = to or false
+    self.buttonInfo = to
 end
 
 ----------------------

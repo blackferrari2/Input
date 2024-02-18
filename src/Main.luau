@@ -51,13 +51,13 @@ function Input.add(self: Input, action: Action.Action, ...: any)
 
     if action.triggerType == Action.TriggerTypes.Keys then
 		local function callHandler(actionName: string, inputState: Enum.UserInputState, inputObject: InputObject)
-			action.handler(actionName, inputState, inputObject, table.unpack(args))
+			return action.handler(actionName, inputState, inputObject, table.unpack(args))
 		end
 
         ContextActionService:BindActionAtPriority(
             action.name,
             callHandler, 
-            action.buttonInfo and true, 
+            action.buttonInfo and true or false, 
             action.priority, 
             table.unpack(action.trigger)
         )
@@ -83,7 +83,9 @@ function Input.add(self: Input, action: Action.Action, ...: any)
         assert(typeof(action.trigger) == "RBXScriptSignal")
 
         local connection = action.trigger:Connect(function()
-            action.handler(action.Name, Enum.UserInputState.Begin, nil, table.unpack(args))
+			local emptyInputObject: any = nil
+
+            action.handler(action.Name, Enum.UserInputState.Begin, emptyInputObject, table.unpack(args))
         end)
 
         self.bindedActionJunk[action.name] = connection
