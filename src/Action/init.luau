@@ -11,7 +11,7 @@ Action.__index = Action
 
 ----------------------
 
-type Handler = (...any) -> (Enum.ContextActionResult)
+type Handler = (string, Enum.UserInputState, InputObject, ...any) -> (Enum.ContextActionResult)
 
 type self = {
     name: string,
