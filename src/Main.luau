@@ -34,7 +34,7 @@ function Input.new(): Input
     return self
 end
 
-function Input.add(self: Input, action: Action.Action)
+function Input.add(self: Input, action: Action.Action, ...: any)
     if self:isActionBinded(action) then
         error(string.format(ERROR_ACTION_ALREADY_BINDED, action.name))
     end
@@ -47,10 +47,16 @@ function Input.add(self: Input, action: Action.Action)
         error(string.format(ERROR_ACTION_MISSING_HANDLER, action.name))
     end
 
+	local args = {...}
+
     if action.triggerType == Action.TriggerTypes.Keys then
+		local function callHandler(actionName: string, inputState: Enum.UserInputState, inputObject: InputObject)
+			action.handler(actionName, inputState, inputObject, table.unpack(args))
+		end
+
         ContextActionService:BindActionAtPriority(
             action.name,
-            action.handler, 
+            callHandler, 
             action.buttonInfo and true, 
             action.priority, 
             table.unpack(action.trigger)
@@ -74,11 +80,10 @@ function Input.add(self: Input, action: Action.Action)
     end
 
     if action.triggerType == Action.TriggerTypes.Signal then
-        -- for luau lsp
         assert(typeof(action.trigger) == "RBXScriptSignal")
 
         local connection = action.trigger:Connect(function()
-            action.handler(action.Name, Enum.UserInputState.Begin)
+            action.handler(action.Name, Enum.UserInputState.Begin, nil, table.unpack(args))
         end)
 
         self.bindedActionJunk[action.name] = connection
